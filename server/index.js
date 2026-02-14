@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const taskRoutes = require("./routes/tasksRoutes");
 const authMiddleware = require("./middleware/authMiddleware");
 
 const app = express();
@@ -18,6 +19,9 @@ app.get("/", (req, res) => {
 
 // Auth routes
 app.use("/api/auth", authRoutes);
+
+// Task routes
+app.use("/api/tasks", taskRoutes);
 
 // Protected route
 app.get("/dashboard", authMiddleware, (req, res) => {
