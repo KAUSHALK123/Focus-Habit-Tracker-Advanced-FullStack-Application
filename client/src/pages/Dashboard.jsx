@@ -27,10 +27,12 @@ const Dashboard = () => {
 
   const fetchTodayTasks = async () => {
     try {
+      console.log('Dashboard: Fetching today tasks...');
       const data = await getTodayTasks();
+      console.log('Dashboard: Received', data.length, 'tasks');
       setTodayTasks(data);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error('Dashboard: Error fetching tasks:', error);
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');

@@ -56,6 +56,8 @@ router.post("/", async (req, res) => {
 
     await task.save();
 
+    console.log(`Task created: ${task.title}, days: ${daysOfWeek}, start: ${startDate}, end: ${endDate}`);
+
     res.status(201).json({ message: "Task created successfully", task });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -65,18 +67,28 @@ router.post("/", async (req, res) => {
 // GET /api/tasks/today - Get today's tasks
 router.get("/today", async (req, res) => {
   try {
-    const today = new Date();
-    const todayString = today.toISOString().split("T")[0]; // YYYY-MM-DD
-    const todayWeekday = today.getDay(); // 0-6
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayString = `${year}-${month}-${day}`;
+    const todayWeekday = now.getDay(); // 0-6
+
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    console.log(`Fetching tasks for user: ${req.userId}, date: ${todayString}, weekday: ${todayWeekday}`);
 
     // Find tasks for today
     const tasks = await Task.find({
       userId: req.userId,
       isDeleted: false,
-      startDate: { $lte: today },
+      startDate: { $lte: endOfDay },
       endDate: { $gte: today },
       daysOfWeek: todayWeekday,
     });
+
+    console.log(`Found ${tasks.length} tasks`);
 
     // Attach completion status for each task
     const tasksWithStatus = await Promise.all(
@@ -109,15 +121,18 @@ router.get("/by-date", async (req, res) => {
       return res.status(400).json({ message: "Date parameter is required" });
     }
 
-    const targetDate = new Date(date);
-    const dateString = date; // YYYY-MM-DD
+    const [year, month, day] = date.split('-').map(Number);
+    const targetDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const dateString = date; // Use the provided date string as-is
     const weekday = targetDate.getDay(); // 0-6
+
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
     // Find tasks for the specified date
     const tasks = await Task.find({
       userId: req.userId,
       isDeleted: false,
-      startDate: { $lte: targetDate },
+      startDate: { $lte: endOfDay },
       endDate: { $gte: targetDate },
       daysOfWeek: weekday,
     });

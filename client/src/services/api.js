@@ -31,7 +31,9 @@ export const createTask = async (data) => {
 };
 
 export const getTodayTasks = async () => {
+  console.log('API: Calling getTodayTasks...');
   const response = await apiClient.get('/api/tasks/today');
+  console.log('API: getTodayTasks response:', response.data);
   return response.data;
 };
 
