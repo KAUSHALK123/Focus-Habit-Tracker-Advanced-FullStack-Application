@@ -269,4 +269,43 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// GET /api/tasks/all - Get all tasks with completion statistics
+router.get("/all", async (req, res) => {
+  try {
+    // Get all tasks (including deleted ones) for the user
+    const tasks = await Task.find({ userId: req.userId }).sort({ createdAt: -1 });
+
+    // For each task, calculate completion statistics
+    const tasksWithStats = await Promise.all(
+      tasks.map(async (task) => {
+        const completions = await TaskCompletion.find({
+          taskId: task._id,
+          userId: req.userId,
+        });
+
+        const totalCompleted = completions.filter(c => c.status === 'completed').length;
+        const totalMissed = completions.filter(c => c.status === 'missed').length;
+        const totalTracked = totalCompleted + totalMissed;
+        const completionRate = totalTracked > 0 
+          ? Math.round((totalCompleted / totalTracked) * 100) 
+          : 0;
+
+        return {
+          ...task.toObject(),
+          completionStats: {
+            totalCompleted,
+            totalMissed,
+            totalTracked,
+            completionRate,
+          },
+        };
+      })
+    );
+
+    res.json(tasksWithStats);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 module.exports = router;

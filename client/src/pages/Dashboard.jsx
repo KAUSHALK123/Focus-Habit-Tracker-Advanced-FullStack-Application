@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getTodayTasks, toggleComplete, toggleDial, deleteTask } from '../services/api';
 import CreateTaskModal from '../components/CreateTaskModal';
+import TaskArchiveModal from '../components/TaskArchiveModal';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [todayTasks, setTodayTasks] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -174,6 +176,35 @@ const Dashboard = () => {
           text-align: center;
           margin-bottom: 25px;
           font-weight: bold;
+        }
+
+        .panel-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 25px;
+        }
+
+        .archive-btn {
+          padding: 8px 16px;
+          background: transparent;
+          border: 1px solid rgba(0, 255, 204, 0.6);
+          color: #00ffcc;
+          border-radius: 20px;
+          cursor: pointer;
+          font-family: 'Orbitron', sans-serif;
+          font-size: 0.65rem;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          transition: all 0.3s;
+          white-space: nowrap;
+        }
+
+        .archive-btn:hover {
+          background: #00ffcc;
+          color: #020f0d;
+          box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+          border-color: #00ffcc;
         }
 
         /* LEFT PANEL - Mind Mapping */
@@ -452,7 +483,12 @@ const Dashboard = () => {
 
           {/* RIGHT PANEL - Today's Tasks */}
           <div className="panel">
-            <div className="panel-title">Today's Neural Pathways</div>
+            <div className="panel-header">
+              <div className="panel-title">Today's Neural Pathways</div>
+              <button className="archive-btn" onClick={() => setShowArchive(true)}>
+                ⚡ Neural Archive
+              </button>
+            </div>
             <div className="tasks-list">
               {todayTasks.length === 0 ? (
                 <div className="no-tasks">No tasks for today</div>
@@ -513,6 +549,12 @@ const Dashboard = () => {
         <CreateTaskModal
           onClose={() => setShowModal(false)}
           onTaskCreated={handleTaskCreated}
+        />
+      )}
+
+      {showArchive && (
+        <TaskArchiveModal
+          onClose={() => setShowArchive(false)}
         />
       )}
     </>
